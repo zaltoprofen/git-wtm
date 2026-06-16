@@ -21,11 +21,17 @@ git worktree を一覧・作成・削除し、選択した worktree でそのま
 
 - Git が使えること
 - 対話シェルが利用できること
-- ソースから実行する場合は Go 1.24 以降が使えること
+- `go install` / ソースから実行する場合は Go 1.24 以降が使えること
 
 シェル起動時は `SHELL` 環境変数を優先して使い、解決できない場合は `/bin/sh` にフォールバックします。
 
 ## 導入方法
+
+### go install を使って導入する
+
+```sh
+go install github.com/zaltoprofen/git-wtm
+```
 
 ### ソースからそのまま実行する
 
