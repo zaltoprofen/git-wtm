@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"testing"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 func TestFilterBaseRefSuggestionsMatchesCaseInsensitiveSubstring(t *testing.T) {
 	refs := []string{"main", "origin/feature/foo", "origin/main"}
@@ -58,5 +62,22 @@ func TestCreateCommandPreviewUsesExistingLocalBranchMode(t *testing.T) {
 	want := "git worktree add /tmp/example.worktrees/feature/foo feature/foo"
 	if preview := m.createCommandPreview(); preview != want {
 		t.Fatalf("createCommandPreview = %q, want %q", preview, want)
+	}
+}
+
+func TestCreateModeAcceptsQAsInput(t *testing.T) {
+	m := newModel()
+	m.busy = false
+	m.mode = modeCreate
+	m.resetCreateForm()
+
+	updated, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
+	if cmd != nil {
+		t.Fatalf("expected q input not to quit in create mode")
+	}
+
+	nextModel := updated.(model)
+	if value := nextModel.create.inputs[0].Value(); value != "q" {
+		t.Fatalf("branch input value = %q, want %q", value, "q")
 	}
 }
