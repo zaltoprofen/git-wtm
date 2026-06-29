@@ -1,136 +1,138 @@
 # git-wtm
 
-git worktree を一覧・作成・削除し、選択した worktree でそのまま作業用シェルを開ける Go 製 TUI アプリケーションです。
+git-wtm is a Go TUI application for listing, creating, and removing Git worktrees, and for opening a working shell directly in the selected worktree.
 
-現在のシェルのカレントディレクトリにある Git リポジトリを対象に動作します。
+It operates on the Git repository in the current shell's working directory.
 
-## 現在の機能
+[日本語版 README](README-ja.md)
 
-- Git リポジトリに紐づく worktree の一覧表示
-- `↑` / `↓` または `j` / `k` による選択移動
-- `c` による新規 worktree 作成
-- `d` による選択中 worktree の削除
-- `r` による一覧再読み込み
-- `Enter` または `o` による、選択中 worktree でのシェル起動
-- base ref 入力時の既存ローカルブランチ・fetch 済みリモートブランチ候補の補完
-- branch 名に応じた create mode の自動切り替えと実行予定コマンド表示
+## Current Features
 
-一覧では current worktree と primary worktree を識別して表示します。
+- List worktrees associated with a Git repository
+- Move the selection with `↑` / `↓` or `j` / `k`
+- Create a new worktree with `c`
+- Remove the selected worktree with `d`
+- Reload the list with `r`
+- Start a shell in the selected worktree with `Enter` or `o`
+- Complete existing local branches and fetched remote branch candidates when entering a base ref
+- Automatically switch the create mode based on the branch name and show the command that will be run
 
-## 前提条件
+The list identifies both the current worktree and the primary worktree.
 
-- Git が使えること
-- 対話シェルが利用できること
-- `go install` / ソースから実行する場合は Go 1.24 以降が使えること
+## Requirements
 
-シェル起動時は `SHELL` 環境変数を優先して使い、解決できない場合は `/bin/sh` にフォールバックします。
+- Git must be available
+- An interactive shell must be available
+- Go 1.24 or later is required when installing with `go install` or running from source
 
-## 導入方法
+When starting a shell, git-wtm prefers the `SHELL` environment variable and falls back to `/bin/sh` if it cannot be resolved.
 
-### go install を使って導入する
+## Installation
+
+### Install with go install
 
 ```sh
 go install github.com/zaltoprofen/git-wtm
 ```
 
-### ソースからそのまま実行する
+### Run directly from source
 
-Git リポジトリ配下で以下を実行します。
+Run the following from inside a Git repository:
 
 ```sh
 go run .
 ```
 
-### バイナリをビルドして使う
+### Build and use a binary
 
 ```sh
 go build
 ./git-wtm
 ```
 
-PATH の通った場所に置いて使う場合の例:
+Example for placing the binary somewhere on your `PATH`:
 
 ```sh
 go build -o "$HOME/bin/git-wtm"
 ```
 
-その後、任意の Git リポジトリ配下で `git-wtm` を実行します。
+Then run `git-wtm` from inside any Git repository.
 
-## 使い方
+## Usage
 
-1. worktree を管理したい Git リポジトリ配下へ移動します。
-2. `git-wtm` を起動します。
-3. 一覧から対象 worktree を選びます。
-4. 必要に応じて作成、削除、シェル起動を行います。
+1. Move into the Git repository whose worktrees you want to manage.
+2. Start `git-wtm`.
+3. Select a worktree from the list.
+4. Create, remove, or open a shell as needed.
 
-## キー操作
+## Key Bindings
 
-- `↑` / `↓` または `j` / `k`: 選択移動
-- `Enter` または `o`: 選択中 worktree でシェルを開く
-- `c`: 新規 worktree 作成画面を開く
-- `d`: 選択中 worktree の削除確認を開く
-- `r`: 一覧を再読み込みする
-- `q`: 終了する
+- `↑` / `↓` or `j` / `k`: Move the selection
+- `Enter` or `o`: Open a shell in the selected worktree
+- `c`: Open the new worktree creation screen
+- `d`: Open the removal confirmation for the selected worktree
+- `r`: Reload the list
+- `q`: Quit
 
-作成画面では以下の操作を使います。
+On the creation screen, use the following keys:
 
-- `Tab`: base ref 候補を入力欄へ反映する、または次の入力欄へ移動する
-- `Shift+Tab`: 前の入力欄へ移動する
-- `↑` / `↓`: base ref 候補の選択、または入力欄の切り替え
-- `Enter`: 作成を実行する
-- `Esc`: 作成をキャンセルする
+- `Tab`: Apply the selected base ref candidate to the input field, or move to the next input field
+- `Shift+Tab`: Move to the previous input field
+- `↑` / `↓`: Select a base ref candidate, or switch input fields
+- `Enter`: Create the worktree
+- `Esc`: Cancel creation
 
-削除確認画面では以下の操作を使います。
+On the removal confirmation screen, use the following keys:
 
-- `y` または `Enter`: 削除を確定する
-- `n` または `Esc`: 削除をキャンセルする
+- `y` or `Enter`: Confirm removal
+- `n` or `Esc`: Cancel removal
 
-## worktree 作成の仕様
+## Worktree Creation Behavior
 
-作成画面では、以下の 2 項目を入力できます。
+The creation screen accepts the following two fields:
 
-- ブランチ名: 必須
-- ベース ref: 任意
+- Branch name: Required
+- Base ref: Optional
 
-branch 名を入力すると、同名のローカルブランチが存在するかどうかで create mode を自動判定します。
+When you enter a branch name, git-wtm automatically determines the create mode based on whether a local branch with the same name exists.
 
-- 同名のローカルブランチが存在しない場合: 新規ブランチ作成モード
-- 同名のローカルブランチが存在する場合: 既存ローカルブランチ利用モード
+- If no local branch with the same name exists: new branch creation mode
+- If a local branch with the same name exists: existing local branch mode
 
-作成画面には、現在の mode と実行予定コマンドを表示します。
+The creation screen shows the current mode and the command that will be run.
 
-base ref の入力欄にフォーカスしている間は、既存のローカルブランチと fetch 済みのリモート追跡ブランチを候補として表示します。候補は入力文字列に応じて絞り込まれ、`Tab` で反映できます。
+While the base ref input field is focused, existing local branches and fetched remote-tracking branches are shown as candidates. Candidates are filtered by the entered text and can be applied with `Tab`.
 
-新しい worktree のデフォルト作成先は、リポジトリ名を `$REPO_NAME`、リポジトリの親ディレクトリを `$PARENT_DIR` としたとき、`$PARENT_DIR/$REPO_NAME.worktrees/<branch>` です。
+The default destination for a new worktree is `$PARENT_DIR/$REPO_NAME.worktrees/<branch>`, where `$REPO_NAME` is the repository name and `$PARENT_DIR` is the repository's parent directory.
 
-ブランチがまだ存在しない場合は、次のどちらかの形で作成します。
+If the branch does not exist yet, git-wtm creates it in one of the following forms:
 
-- ベース ref 未指定: `git worktree add -b <branch> <path>`
-- ベース ref 指定: `git worktree add -b <branch> <path> <base-ref>`
+- Without a base ref: `git worktree add -b <branch> <path>`
+- With a base ref: `git worktree add -b <branch> <path> <base-ref>`
 
-同名のローカルブランチがすでに存在する場合は、作成画面は既存ローカルブランチ利用モードへ切り替わり、ベース ref を無視して次の形で作成します。
+If a local branch with the same name already exists, the creation screen switches to existing local branch mode, ignores the base ref, and creates the worktree in the following form:
 
 - `git worktree add <path> <branch>`
 
-## worktree 削除の仕様
+## Worktree Removal Behavior
 
-削除は `git worktree remove <path>` を使います。
+Removal uses `git worktree remove <path>`.
 
-以下の worktree は UI 側で削除を禁止しています。
+The UI prevents removal of the following worktrees:
 
-- 現在いる current worktree
-- primary worktree
+- The current worktree
+- The primary worktree
 
-## シェル起動の仕様
+## Shell Launch Behavior
 
-一覧画面で `Enter` または `o` を押すと、選択した worktree のディレクトリへ移動したうえで、現在のプロセスを対話シェルに置き換えます。
+When you press `Enter` or `o` on the list screen, git-wtm moves to the selected worktree directory and replaces the current process with an interactive shell.
 
-この動作では TUI には戻りません。シェルを終了すると元の親シェルに戻ります。
+This does not return to the TUI. When you exit the shell, you return to the original parent shell.
 
-ただし、親シェル自身のカレントディレクトリは変更されません。親シェルを直接その worktree へ移動させたい場合は、別途シェル関数やラッパースクリプトによる連携が必要です。
+However, the parent shell's current directory is not changed. If you want to move the parent shell itself into that worktree, you need a separate integration such as a shell function or wrapper script.
 
-## 制約
+## Limitations
 
-- Git リポジトリ外では動作しません
-- 親シェルのカレントディレクトリは変更できません
-- シェル起動は新しい親シェル移動ではなく、アプリプロセスの置き換えです
+- git-wtm does not work outside a Git repository
+- git-wtm cannot change the parent shell's current directory
+- Shell launch replaces the application process; it does not move a new parent shell
